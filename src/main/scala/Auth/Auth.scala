@@ -1,0 +1,5 @@
+package Auth
+
+class Auth {
+
+}
