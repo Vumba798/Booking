@@ -1,15 +1,8 @@
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import server.routes.Routes
-//import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
-//import akka.http.scaladsl.model._
-//import akka.http.scaladsl.server.Directives._
-//import akka.http.scaladsl.server.{Directive, Route, RouteResult}
-
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.io.StdIn
-
+import server.routes.Routes.routes
+import scala.concurrent.ExecutionContextExecutor
 
 object Main extends App {
   // TODO replace hardcoded values

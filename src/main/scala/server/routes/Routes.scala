@@ -16,6 +16,7 @@ object Routes {
         getCompanyBookings
       )
     }
+    // todo provide implementation
     /*
     pathPrefix("auth") {
       registration ~ // api/auth/registration
