@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
 
 
-object Main extends App with Routes {
+object Main extends App {
   // TODO replace hardcoded values
   val host = "localhost"
   val port = 8080

@@ -1,9 +1,22 @@
 package server.routes
 
+import akka.http.scaladsl.server.Directives.{concat, pathPrefix}
 import akka.http.scaladsl.server.Route
+import server.routes.BookingRoutes.{createBooking, editBooking, getAvailableTime, getBookings, getCompanyBookings}
 
-trait Routes extends AuthRoutes with AnalyticsRoutes {
+
+object Routes {
   val routes: Route = pathPrefix("api") {
+    pathPrefix("booking") {
+      concat(
+        getAvailableTime,
+        createBooking,
+        getBookings,
+        editBooking,
+        getCompanyBookings
+      )
+    }
+    /*
     pathPrefix("auth") {
       registration ~ // api/auth/registration
       login ~ // api/auth/login
@@ -14,5 +27,6 @@ trait Routes extends AuthRoutes with AnalyticsRoutes {
       getLeaderBoard ~ // api/analytics/get_leader
       getBusiestTimes // api/analytics/get_best_time
     }
+     */
   }
 }

@@ -1,4 +1,4 @@
-package server.Database
+package server.database
 
 import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase}
 
