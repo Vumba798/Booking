@@ -12,5 +12,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
   "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
   "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
-  "org.mongodb.scala" %% "mongo-scala-driver" % "4.6.0"
+  "org.mongodb.scala" %% "mongo-scala-driver" % "4.6.0",
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.3"
 )
