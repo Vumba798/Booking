@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.{Directives, Route}
 
 object BookingRoutes {
 
-  // TODO remove printParams (helps in debugging)
+  // TODO remove formatParams (helps in debugging)
   private def formatParams(params: (String, String)*): HttpEntity.Strict = {
     /* formats params into html (using notation "paramName: paramValue\n") e.g.
      companyId: 1234
