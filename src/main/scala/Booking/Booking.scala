@@ -3,7 +3,7 @@ package Booking
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import org.mongodb.scala.model.Filters.equal
-import server.Database.Database
+import server.database.Database
 import server.database.model._
 
 import scala.concurrent.{ExecutionContext, Future}
