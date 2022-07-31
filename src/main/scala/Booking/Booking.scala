@@ -2,8 +2,10 @@ package Booking
 
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
+import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
-import server.database.Database
+import server.database.DatabaseActor.GetAvailableTimeCommand
+import server.database.DAO
 import server.database.model._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,11 +17,16 @@ object Booking {
 
 
 
-  def getAvailableTime(startT: String,
+  def getAvailableTime(
+    startT: String,
     finishT: String,
     companyId: Int,
-    master: String): Future[Seq[BookingRecord]] = Database.bookings
-      .find(equal("startT", startT))
+    master: String): Future[Seq[BookingRecord]] =
+    DAO.bookings.find(Filters.and(
+        equal("startT", startT),
+        equal("finishT", finishT),
+        equal("companyId", companyId),
+        equal("master", master)))
       .toFuture()
       .recoverWith(e => Future.failed(e))
 
