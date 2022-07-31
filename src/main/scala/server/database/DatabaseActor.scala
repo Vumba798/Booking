@@ -41,22 +41,33 @@ object DatabaseActor {
   case class InvalidRequest(e: Throwable) extends Response // TODO maybe change it
 
   def apply(): Behavior[Command] = Behaviors.receiveMessage {
-    case _: BookingCommands => bookingCommandsHandler _
-      Behaviors.same
-
-    // TODO add more cases (one for each Command)
-    case _ => ???
+    case m: BookingCommands => bookingCommandsHandler(m)
+    case m: AuthCommands => authCommandsHandler(m)
+    case m: AnalyticsCommands => analyticsCommandsHandler(m)
   }
 
-  private def bookingCommandsHandler(c: BookingCommands): Unit = c match {
+  private def bookingCommandsHandler(c: BookingCommands): Behavior[Command] = c match {
+    // each case must return Behaviors.same
     case p: GetAvailableTimeCommand =>
       val dataFuture = Booking.getAvailableTime(
         p.startT, p.finishT, p.companyId, p.master)
 
       dataFuture.onComplete {
         case Success(x) => p.replyTo ! JsonResponse(toJson(x))
-        // TODO maybe change InvalidRequest
         case Failure(e) => p.replyTo ! InvalidRequest(e)
       }
+      Behaviors.same
+    case _ => ???; Behaviors.same // TODO
+  }
+
+  private def authCommandsHandler(c: AuthCommands): Behavior[Command] = c match {
+    // TODO
+    case _ => ???; Behaviors.same
+  }
+
+  private def analyticsCommandsHandler(c: AnalyticsCommands): Behavior[Command] = c match {
+    // TODO
+    case _ => ???; Behaviors.same
   }
 }
+
