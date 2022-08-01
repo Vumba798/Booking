@@ -1,10 +1,30 @@
 package server.routes
 
+import akka.actor.typed.scaladsl.AskPattern.{Askable, schedulerFromActorSystem}
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.Route
+import akka.util.Timeout
+import server.database.DatabaseActor
+import server.database.DatabaseActor.{GetAvailableTimeCommand, JsonResponse}
 
-object BookingRoutes {
+import scala.concurrent.duration.DurationInt
+
+class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Command])
+                   (override protected implicit val system: ActorSystem[Nothing]) extends DbRoutesTrait {
+
+  implicit val timeout: Timeout = 5.seconds
+
+  lazy val routes: Route = pathPrefix("booking") {
+    concat(
+      getAvailableTime,
+      createBooking,
+      getBookings,
+      editBooking,
+      getCompanyBookings,
+    )
+  }
 
   // TODO remove formatParams (helps in debugging)
   private def formatParams(params: (String, String)*): HttpEntity.Strict = {
@@ -25,14 +45,14 @@ object BookingRoutes {
         "companyId".as[Int],
         "master".as[String]
       ) { (startT, finishT, companyId, master) =>
-        complete(
-          // TODO change contents of complete function (replace formatParams)
-          formatParams(
-            ("startT", startT),
-            ("finishT", finishT),
-            ("companyId", companyId.toString),
-            ("master", master))
-        )
+        val dbResponse = dbActors.ask(ref =>
+          GetAvailableTimeCommand(ref, startT, finishT, companyId, master))
+
+        // TODO add exception handler (onFailure) or replace "onSuccess" with onComplete to handle failures manually
+        onSuccess(dbResponse) {
+          case JsonResponse(json) => complete(HttpEntity(ContentTypes.`application/json`, json))
+          case _ => complete("")
+        }
       }
     }
   }
@@ -48,8 +68,7 @@ object BookingRoutes {
           formatParams(
             ("fullName", fullName),
             ("email", email),
-            ("master", master)
-          )
+            ("master", master))
         )
       }
     }
