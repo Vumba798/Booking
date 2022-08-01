@@ -9,7 +9,7 @@ import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase}
 import server.database.model._
 
 
-object DAO {
+object Dao {
   private val mapper = JsonMapper.builder()
     .addModule(DefaultScalaModule)
     .build()
