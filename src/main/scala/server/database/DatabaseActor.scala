@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import server.database.DAO.{bookings, toJson}
+import server.database.Dao.{bookings, toJson}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
