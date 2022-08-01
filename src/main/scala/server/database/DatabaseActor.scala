@@ -15,9 +15,6 @@ object DatabaseActor {
   // TODO
   implicit val ec: ExecutionContext = ???
 
-  // mapper is used in marshalling objects into json strings
-
-
 
   sealed trait Command // Messages that HttpActor can receive
   sealed trait BookingCommands extends Command // parameters for all Booking methods
@@ -38,6 +35,7 @@ object DatabaseActor {
 
   sealed trait Response
   case class JsonResponse(json: String) extends Response
+  case class StatusCodeResponse() extends Response // TODO
   case class InvalidRequest(e: Throwable) extends Response // TODO maybe change it
 
   def apply(): Behavior[Command] = Behaviors.receiveMessage {
@@ -57,6 +55,7 @@ object DatabaseActor {
         case Failure(e) => p.replyTo ! InvalidRequest(e)
       }
       Behaviors.same
+
     case _ => ???; Behaviors.same // TODO
   }
 
