@@ -26,16 +26,6 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
     )
   }
 
-  // TODO remove formatParams (helps in debugging)
-  private def formatParams(params: (String, String)*): HttpEntity.Strict = {
-    /* formats params into html (using notation "paramName: paramValue\n") e.g.
-     companyId: 1234
-     startT: 24-06-2022 (another format may be used)
-     */
-    //
-    val s = params.foldLeft("<h1>")((z, p) => z + p._1 + ": " + p._2 + "<br>") + "</h1>"
-    HttpEntity(ContentTypes.`text/html(UTF-8)`, s)
-  }
 
   val getAvailableTime: Route = path("getAvailableTime") {
     get {
@@ -45,6 +35,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         "companyId".as[Int],
         "master".as[String]
       ) { (startT, finishT, companyId, master) =>
+
         val dbResponse = dbActors.ask(ref =>
           GetAvailableTimeCommand(ref, startT, finishT, companyId, master))
 
@@ -65,10 +56,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         "master".as[String]
       ) { (fullName, email, master) =>
         complete(
-          formatParams(
-            ("fullName", fullName),
-            ("email", email),
-            ("master", master))
+          ???
         )
       }
     }
@@ -83,12 +71,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         "finishT".as[String]
       ) { (companyId, email, startT, finishT) =>
         complete(
-          // TODO change contents of complete function (replace formatParams)
-          formatParams(
-            ("companyId", companyId.toString),
-            ("email", email),
-            ("startT", startT),
-            ("finishT", finishT))
+            ???
         )
       }
     }
@@ -106,12 +89,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
           case None => "None"
         }
         complete(
-          // TODO change contents of complete function (replace formatParams)
-          formatParams(
-            ("id", id.toString),
-            ("status", status),
-            ("message", msg)
-          )
+          ???
         )
       }
     }
@@ -125,11 +103,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         "finishT".as[String]
       ) { (companyId, startT, finishT) =>
         complete(
-          formatParams(
-            ("companyId", companyId.toString),
-            ("startT", startT),
-            ("finishT", finishT)
-          )
+          ???
         )
       }
     }
