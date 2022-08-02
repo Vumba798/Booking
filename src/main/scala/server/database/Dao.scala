@@ -16,7 +16,6 @@ object Dao {
 
   private val client: MongoClient = MongoClient()
 
-  // todo add provider classOf[Company]
   private val db: MongoDatabase =
   client.getDatabase("BookingPractice").withCodecRegistry(
     fromRegistries(fromProviders(classOf[User], classOf[BookingRecord], classOf[Company]),
