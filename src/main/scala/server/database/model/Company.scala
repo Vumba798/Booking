@@ -1,7 +1,9 @@
 package server.database.model
 
-case class Company() extends DbElement
+import org.bson.types.ObjectId
+
+case class Company(id: ObjectId, name: String) extends DbElement
 
 object Company {
-  def apply() = ???
+  def apply(name: String) = new Company(id = new ObjectId, name)
 }

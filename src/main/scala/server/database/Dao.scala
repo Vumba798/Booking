@@ -19,11 +19,10 @@ object Dao {
   // todo add provider classOf[Company]
   private val db: MongoDatabase =
   client.getDatabase("BookingPractice").withCodecRegistry(
-    fromRegistries(fromProviders(classOf[User], classOf[BookingRecord]),
+    fromRegistries(fromProviders(classOf[User], classOf[BookingRecord], classOf[Company]),
     DEFAULT_CODEC_REGISTRY))
 
-  // todo change companies generic type from "Document" to "Company"
-  val companies: MongoCollection[Document] = db.getCollection("Companies")
+  val companies: MongoCollection[Company] = db.getCollection("Companies")
   val users: MongoCollection[User] = db.getCollection("Users")
   val bookings: MongoCollection[BookingRecord] = db.getCollection("Bookings")
 
