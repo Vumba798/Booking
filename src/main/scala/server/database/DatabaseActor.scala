@@ -54,23 +54,18 @@ object DatabaseActor {
 
   private def bookingCommandsHandler(c: BookingCommands): Behavior[Command] = c match {
     // each case must return Behaviors.same
-    case p: GetAvailableTimeCommand =>
-      val dataFuture = Booking.getAvailableTime(
-        p.startT, p.finishT, p.companyId, p.masterId)
-
-      dataFuture.onComplete {
+    case p: GetAvailableTimeCommand => Booking
+      .getAvailableTime(p.startT, p.finishT, p.companyId, p.masterId)
+      .onComplete {
         case Success(x) => p.replyTo ! JsonResponse(toJson(x))
         case Failure(e) => p.replyTo ! InvalidRequest(e)
       }
       Behaviors.same
 
-    case p: CreateBookingCommand =>
-      val dataFuture = Booking.createBooking(
-        p.companyId, p.masterId, p.startT, p.finishT, p.clientTel
-      )
-
-      dataFuture.onComplete {
-        case Success(x) => p.replyTo ! StatusCodeResponse(201)
+    case p: CreateBookingCommand => Booking
+      .createBooking(p.companyId, p.masterId, p.startT, p.finishT, p.clientTel)
+      .onComplete {
+        case Success(_) => p.replyTo ! StatusCodeResponse(201)
         case Failure(e) => p.replyTo ! InvalidRequest(e)
       }
       Behaviors.same
