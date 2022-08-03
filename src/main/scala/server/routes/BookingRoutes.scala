@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import server.database.DatabaseActor
-import server.database.DatabaseActor.{CreateBookingCommand, GetAvailableTimeCommand, JsonResponse, StatusCodeResponse}
+import server.database.DatabaseActor.{CreateBookingCommand, EditBookingCommand, GetAvailableTimeCommand, GetBookingsCommand, GetCompanyBookingsCommands, JsonResponse, StatusCodeResponse}
 
 import scala.concurrent.duration.DurationInt
 
@@ -76,9 +76,12 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         "startT".as[String],
         "finishT".as[String]
       ) { (companyId, clientTel, startT, finishT) =>
-        complete(
-            ???
-        )
+        val dbResponse = dbActors.ask(ref =>
+          GetBookingsCommand(ref, companyId, clientTel, startT, finishT))
+        onSuccess(dbResponse) {
+          case JsonResponse(json) => complete(HttpEntity(ContentTypes.`application/json`, json))
+          case _ => complete("undefined response") // TODO
+        }
       }
     }
   }
@@ -89,14 +92,17 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         "bookingId".as[String],
         "status".as[String],
         "message".as[String].optional
-      ) { (id, status, message) =>
+      ) { (bookingId, status, message) =>
         val msg = message match {
           case Some(str) => str
           case None => ""
         }
-        complete(
-          ???
-        )
+        val dbResponse = dbActors.ask(ref =>
+          EditBookingCommand(ref, bookingId, status, msg))
+        onSuccess(dbResponse) {
+          case StatusCodeResponse(code: Int) => complete(StatusCode.int2StatusCode(code))
+          case _ => complete("undefined response") // TODO
+        }
       }
     }
   }
@@ -108,9 +114,12 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         "startT".as[String],
         "finishT".as[String]
       ) { (companyId, startT, finishT) =>
-        complete(
-          ???
-        )
+        val dbResponse = dbActors.ask(ref =>
+          GetCompanyBookingsCommands(ref, companyId, startT, finishT))
+        onSuccess(dbResponse) {
+          case JsonResponse(json) => complete(HttpEntity(ContentTypes.`application/json`, json))
+          case _ => complete("undefined response") // TODO
+        }
       }
     }
   }

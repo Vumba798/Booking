@@ -32,7 +32,25 @@ object DatabaseActor {
     startT: String,
     finishT: String,
     clientTel: String) extends BookingCommands
-  // TODO add more case classes
+
+  final case class GetBookingsCommand(
+    replyTo: ActorRef[Response],
+    companyId: String,
+    clientTel: String,
+    startT: String,
+    finishT: String) extends BookingCommands
+
+  final case class EditBookingCommand(
+    replyTo: ActorRef[Response],
+    bookingId: String,
+    status: String,
+    message: String) extends BookingCommands
+
+  final case class GetCompanyBookingsCommands(
+    replyTo: ActorRef[Response],
+    companyId: String,
+    startT: String,
+    finishT: String) extends BookingCommands
 
   sealed trait AuthCommands extends Command
   // TODO add more case classes which extend AuthCommands trait
@@ -70,7 +88,30 @@ object DatabaseActor {
       }
       Behaviors.same
 
-    case _ => ???; Behaviors.same // TODO
+    case p: GetBookingsCommand => Booking
+      .getBookings(p.companyId, p.clientTel, p.startT, p.finishT)
+      .onComplete {
+        case Success(records) => p.replyTo ! JsonResponse(toJson(records))
+        case Failure(e) => p.replyTo ! InvalidRequest(e)
+      }
+      Behaviors.same
+
+    case p: EditBookingCommand => Booking
+      .editBooking(p.bookingId, p.status, p.message)
+      .onComplete {
+        case Success(x) => p.replyTo ! StatusCodeResponse(200)
+        case Failure(e) => p.replyTo ! InvalidRequest(e)
+      }
+
+      Behaviors.same
+
+    case p: GetCompanyBookingsCommands => Booking
+      .getCompanyBookings(p.companyId, p.startT, p.finishT)
+      .onComplete {
+        case Success(records) => p.replyTo !  JsonResponse(toJson(records))
+      }
+
+      Behaviors.same
   }
 
   private def authCommandsHandler(c: AuthCommands): Behavior[Command] = c match {
