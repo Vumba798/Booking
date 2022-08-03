@@ -34,16 +34,23 @@ object Booking {
   }
 
   def createBooking(
-  price: Double,
-  startT: String,
-  finishT: String,
-  companyId: Int,
-  master: String) = ???
-    /* todo implement
-  Database.bookings
-      .insertOne(BookingRecord(startT, finishT, companyId, master))
-
-     */
+    companyId: String,
+    masterId: String,
+    startT: String,
+    finishT: String,
+    clientTel: String): Future[InsertOneResult] =
+    Dao.bookings
+      .insertOne(
+        BookingRecord(
+          new ObjectId(companyId),
+          new ObjectId(masterId),
+          price = 2000, // todo change
+          info = "",
+          startT, finishT,
+          clientTel,
+          status = "Created"))
+      .toFuture()
+      .recoverWith(e => Future.failed(e))
 
 
 }
