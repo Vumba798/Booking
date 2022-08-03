@@ -86,13 +86,13 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
   val editBooking: Route = path("editBooking") {
     patch {
       parameters(
-        "id".as[Int],
+        "bookingId".as[String],
         "status".as[String],
         "message".as[String].optional
       ) { (id, status, message) =>
         val msg = message match {
           case Some(str) => str
-          case None => "None"
+          case None => ""
         }
         complete(
           ???
@@ -104,7 +104,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
   val getCompanyBookings: Route = path("getCompanyBookings") {
     get {
       parameters(
-        "companyId".as[Int],
+        "companyId".as[String],
         "startT".as[String],
         "finishT".as[String]
       ) { (companyId, startT, finishT) =>
