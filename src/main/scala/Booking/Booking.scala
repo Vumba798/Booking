@@ -27,8 +27,8 @@ object Booking {
     Dao.bookings.find(Filters.and(
         equal("startT", startT),
         equal("finishT", finishT),
-        equal("companyId", companyId),
-        equal("master", master)))
+        equal("companyId", new ObjectId(companyId)),
+        equal("masterId", new ObjectId(masterId))))
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
