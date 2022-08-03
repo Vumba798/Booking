@@ -11,15 +11,18 @@ final class Routes
   (override protected implicit val system: ActorSystem[Nothing]) extends DbRoutesTrait {
 
   private val bookingRoutes = new BookingRoutes(dbActors).routes
+  /*
   private val authRoutes = ??? // TODO provide implementation
   private val analyticsRoutes = ??? // TODO provide implementation
 
+   */
 
-  lazy val routes: Route = pathPrefix("api") {
+
+  val routes: Route = pathPrefix("api") {
     concat(
-      authRoutes,
+  //    authRoutes,
       bookingRoutes,
-      analyticsRoutes,
+  //    analyticsRoutes,
     )
   }
 }
