@@ -2,6 +2,9 @@ package Booking
 
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
+import org.bson.types.ObjectId
+import org.mongodb.scala.result.InsertOneResult
+//import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
 import server.database.DatabaseActor.GetAvailableTimeCommand
@@ -10,7 +13,6 @@ import server.database.model._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-// Actor that handles Booking API
 object Booking {
   // TODO change
   implicit val ec: ExecutionContext = ???
@@ -20,8 +22,8 @@ object Booking {
   def getAvailableTime(
     startT: String,
     finishT: String,
-    companyId: Int,
-    master: String): Future[Seq[BookingRecord]] = {
+    companyId: String,
+    masterId: String): Future[Seq[BookingRecord]] = {
     Dao.bookings.find(Filters.and(
         equal("startT", startT),
         equal("finishT", finishT),
