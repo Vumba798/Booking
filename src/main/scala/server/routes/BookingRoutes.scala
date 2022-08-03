@@ -42,7 +42,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         // TODO add exception handler (onFailure) or replace "onSuccess" with onComplete to handle failures manually
         onSuccess(dbResponse) {
           case JsonResponse(json) => complete(HttpEntity(ContentTypes.`application/json`, json))
-          case _ => complete("") // TODO
+          case _ => complete("undefined response")
         }
       }
     }
@@ -62,7 +62,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
 
         onSuccess(dbResponse) {
           case StatusCodeResponse(code: Int) => complete(StatusCode.int2StatusCode(code))
-          case _ => complete("") // TODO
+          case _ => complete("undefined response") // TODO
         }
       }
     }
