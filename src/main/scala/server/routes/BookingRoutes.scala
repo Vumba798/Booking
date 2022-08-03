@@ -2,12 +2,12 @@ package server.routes
 
 import akka.actor.typed.scaladsl.AskPattern.{Askable, schedulerFromActorSystem}
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCode}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import server.database.DatabaseActor
-import server.database.DatabaseActor.{GetAvailableTimeCommand, JsonResponse}
+import server.database.DatabaseActor.{CreateBookingCommand, GetAvailableTimeCommand, JsonResponse, StatusCodeResponse}
 
 import scala.concurrent.duration.DurationInt
 
@@ -32,7 +32,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
       parameters(
         "startT".as[String],
         "finishT".as[String],
-        "companyId".as[Int],
+        "companyId".as[String],
         "master".as[String]
       ) { (startT, finishT, companyId, master) =>
 
@@ -42,7 +42,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         // TODO add exception handler (onFailure) or replace "onSuccess" with onComplete to handle failures manually
         onSuccess(dbResponse) {
           case JsonResponse(json) => complete(HttpEntity(ContentTypes.`application/json`, json))
-          case _ => complete("")
+          case _ => complete("") // TODO
         }
       }
     }
@@ -51,13 +51,19 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
   val createBooking: Route = path("createBooking") {
     post {
       parameters(
-        "fullName".as[String],
-        "email".as[String],
-        "master".as[String]
-      ) { (fullName, email, master) =>
-        complete(
-          ???
-        )
+        "companyId".as[String],
+        "masterId".as[String],
+        "startT".as[String],
+        "finishT".as[String],
+        "clientTel".as[String]
+      ) { (companyId, masterId, startT, finishT, clientTel) =>
+        val dbResponse = dbActors.ask(ref =>
+          CreateBookingCommand(ref, companyId, masterId, startT, finishT, clientTel))
+
+        onSuccess(dbResponse) {
+          case StatusCodeResponse(code: Int) => complete(StatusCode.int2StatusCode(code))
+          case _ => complete("") // TODO
+        }
       }
     }
   }
@@ -65,11 +71,11 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
   val getBookings: Route = path("getBookings") {
     get {
       parameters(
-        "companyId".as[Int],
-        "email".as[String],
+        "companyId".as[String],
+        "clientTel".as[String],
         "startT".as[String],
         "finishT".as[String]
-      ) { (companyId, email, startT, finishT) =>
+      ) { (companyId, clientTel, startT, finishT) =>
         complete(
             ???
         )
