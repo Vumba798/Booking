@@ -13,7 +13,7 @@ import scala.util.{Failure, Success}
 object DatabaseActor {
 
   // TODO
-  implicit val ec: ExecutionContext = ???
+  implicit val ec: ExecutionContext = ExecutionContext.global
 
 
   sealed trait Command // Messages that HttpActor can receive
@@ -80,12 +80,12 @@ object DatabaseActor {
 
   private def authCommandsHandler(c: AuthCommands): Behavior[Command] = c match {
     // TODO
-    case _ => ???; Behaviors.same
+    case _ => Behaviors.same
   }
 
   private def analyticsCommandsHandler(c: AnalyticsCommands): Behavior[Command] = c match {
     // TODO
-    case _ => ???; Behaviors.same
+    case _ => Behaviors.same
   }
 }
 
