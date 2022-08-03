@@ -22,8 +22,16 @@ object DatabaseActor {
     replyTo: ActorRef[Response],
     startT: String,
     finishT: String,
-    companyId: Int,
-    master: String) extends BookingCommands
+    companyId: String,
+    masterId: String) extends BookingCommands
+
+  final case class CreateBookingCommand(
+    replyTo: ActorRef[Response],
+    companyId: String,
+    masterId: String,
+    startT: String,
+    finishT: String,
+    clientTel: String) extends BookingCommands
   // TODO add more case classes
 
   sealed trait AuthCommands extends Command
@@ -35,7 +43,7 @@ object DatabaseActor {
 
   sealed trait Response
   case class JsonResponse(json: String) extends Response
-  case class StatusCodeResponse() extends Response // TODO
+  case class StatusCodeResponse(code: Int) extends Response
   case class InvalidRequest(e: Throwable) extends Response // TODO maybe change it
 
   def apply(): Behavior[Command] = Behaviors.receiveMessage {
@@ -48,10 +56,21 @@ object DatabaseActor {
     // each case must return Behaviors.same
     case p: GetAvailableTimeCommand =>
       val dataFuture = Booking.getAvailableTime(
-        p.startT, p.finishT, p.companyId, p.master)
+        p.startT, p.finishT, p.companyId, p.masterId)
 
       dataFuture.onComplete {
         case Success(x) => p.replyTo ! JsonResponse(toJson(x))
+        case Failure(e) => p.replyTo ! InvalidRequest(e)
+      }
+      Behaviors.same
+
+    case p: CreateBookingCommand =>
+      val dataFuture = Booking.createBooking(
+        p.companyId, p.masterId, p.startT, p.finishT, p.clientTel
+      )
+
+      dataFuture.onComplete {
+        case Success(x) => p.replyTo ! StatusCodeResponse(201)
         case Failure(e) => p.replyTo ! InvalidRequest(e)
       }
       Behaviors.same
