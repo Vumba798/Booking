@@ -1,15 +1,11 @@
 package Booking
 
-import akka.actor.typed.Behavior
-import akka.actor.typed.scaladsl.Behaviors
 import org.bson.types.ObjectId
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.Filters.{gte, lte}
 import org.mongodb.scala.result.InsertOneResult
-//import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
-import server.database.DatabaseActor.GetAvailableTimeCommand
 import server.database.Dao
 import server.database.model._
 
@@ -108,10 +104,4 @@ object Booking {
       .recoverWith(e => Future.failed(e))
   }
 
-  def printAll(implicit ec: ExecutionContext) = {
-    Dao.companies
-      .find()
-      .toFuture()
-      .recoverWith(e => Future.failed(e))
-  }
 }
