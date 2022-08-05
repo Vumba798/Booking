@@ -8,6 +8,7 @@ import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import server.database.DatabaseActor
 import server.database.DatabaseActor.{CreateBookingCommand, EditBookingCommand, GetAvailableTimeCommand, GetBookingsCommand, GetCompanyBookingsCommands, JsonResponse, StatusCodeResponse}
+import server.database.model.requests.CreateBookingRequest
 
 import scala.concurrent.duration.DurationInt
 
@@ -49,6 +50,7 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
   }
 
   val createBooking: Route = path("createBooking") {
+    /* todo where its better to hold params? in query or in body?
     post {
       parameters(
         "companyId".as[String],
@@ -63,6 +65,18 @@ class BookingRoutes(override protected val dbActors: ActorRef[DatabaseActor.Comm
         onSuccess(dbResponse) {
           case StatusCodeResponse(code: Int) => complete(StatusCode.int2StatusCode(code))
           case _ => complete("undefined response") // TODO
+        }
+      }
+    }
+     */
+    post {
+      entity(as[CreateBookingRequest]) { request =>
+        val dbResponse = dbActors.ask(ref =>
+          CreateBookingCommand(ref, request.companyId, request.masterId, request.startT, request.finishT, request.clientTel))
+        onSuccess(dbResponse) {
+          case StatusCodeResponse(code: Int) => complete(StatusCode.int2StatusCode(code))
+          case _ => complete("undefined response") // TODO
+
         }
       }
     }
