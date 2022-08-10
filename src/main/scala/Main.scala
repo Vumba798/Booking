@@ -17,7 +17,6 @@ object Main {
   case object Stop extends Message
 
   def apply(): Behavior[Message] = Behaviors.setup { ctx =>
-
     implicit val system = ctx.system
     // TODO replace hardcoded values
     val host = "localhost"
@@ -35,42 +34,47 @@ object Main {
     // uses callback
     ctx.pipeToSelf(bindingFuture) {
       case Success(binding) => Started(binding)
-      case Failure(e) => StartFailed(e)
+      case Failure(e)       => StartFailed(e)
     }
 
     def running(binding: ServerBinding): Behavior[Message] = {
-      Behaviors.receiveMessagePartial[Message] {
-
-        case Stop => ctx.log.info(
-          "Stopping server http://{}:{}/",
-          binding.localAddress.getHostString,
-          binding.localAddress.getPort)
+      Behaviors
+        .receiveMessagePartial[Message] { case Stop =>
+          ctx.log.info(
+            "Stopping server http://{}:{}/",
+            binding.localAddress.getHostString,
+            binding.localAddress.getPort
+          )
           Behaviors.stopped
-      }.receiveSignal {
-        case (_, PostStop) => // we receive PostStop when the actor was stopped
-          binding.unbind()
-          Behaviors.same
+        }
+        .receiveSignal {
+          case (
+                _,
+                PostStop
+              ) => // we receive PostStop when the actor was stopped
+            binding.unbind()
+            Behaviors.same
+        }
+    }
+
+    def starting(wasStopped: Boolean): Behaviors.Receive[Message] =
+      Behaviors.receiveMessage {
+        case StartFailed(cause) =>
+          throw new RuntimeException("Server failed to start", cause)
+        case Started(binding) =>
+          println("success")
+          ctx.log.info(
+            "Server online at http://{}:{}/",
+            binding.localAddress.getHostString,
+            binding.localAddress.getPort
+          )
+          if (wasStopped) ctx.self ! Stop
+          running(binding)
+        case Stop =>
+          // we got a stop message but haven't completed starting yet,
+          // we cannot stop until starting has completed
+          starting(wasStopped = true)
       }
-    }
-
-    def starting(wasStopped: Boolean): Behaviors.Receive[Message] = Behaviors.receiveMessage {
-      case StartFailed(cause) =>
-        throw new RuntimeException("Server failed to start", cause)
-      case Started(binding) =>
-        println("success")
-        ctx.log.info(
-          "Server online at http://{}:{}/",
-          binding.localAddress.getHostString,
-          binding.localAddress.getPort)
-        if (wasStopped) ctx.self ! Stop
-        running(binding)
-      case Stop =>
-        // we got a stop message but haven't completed starting yet,
-        // we cannot stop until starting has completed
-        starting(wasStopped = true)
-    }
-
-
 
     starting(wasStopped = false)
   }

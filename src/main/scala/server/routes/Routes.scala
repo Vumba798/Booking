@@ -6,9 +6,11 @@ import akka.http.scaladsl.server.Route
 import server.database.DatabaseActor
 import server.routes.DbRoutesTrait
 
-final class Routes
-  (override protected val dbActors: ActorRef[DatabaseActor.Command])
-  (override protected implicit val system: ActorSystem[Nothing]) extends DbRoutesTrait {
+final class Routes(
+    override protected val dbActors: ActorRef[DatabaseActor.Command]
+)(
+    override protected implicit val system: ActorSystem[Nothing]
+) extends DbRoutesTrait {
 
   private val bookingRoutes = new BookingRoutes(dbActors).routes
   /*
@@ -17,12 +19,11 @@ final class Routes
 
    */
 
-
   val routes: Route = pathPrefix("api") {
     concat(
-  //    authRoutes,
-      bookingRoutes,
-  //    analyticsRoutes,
+      //    authRoutes,
+      bookingRoutes
+      //    analyticsRoutes,
     )
   }
 }

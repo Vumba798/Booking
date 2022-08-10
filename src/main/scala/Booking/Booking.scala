@@ -15,32 +15,35 @@ object Booking {
 
   // TODO check if it is better to move "new ObjectId(...)" in a separate val
   def getAvailableTime(
-    startT: String,
-    finishT: String,
-    companyId: String,
-    masterId: String
+      startT: String,
+      finishT: String,
+      companyId: String,
+      masterId: String
   )(implicit
-    ec: ExecutionContext
+      ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
     Dao.bookings
-      .find(Filters.and(
-        equal("startT", startT),
-        equal("finishT", finishT),
-        equal("companyId", new ObjectId(companyId)),
-        equal("masterId", new ObjectId(masterId))))
+      .find(
+        Filters.and(
+          equal("startT", startT),
+          equal("finishT", finishT),
+          equal("companyId", new ObjectId(companyId)),
+          equal("masterId", new ObjectId(masterId))
+        )
+      )
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
 
   def createBooking(
-    companyId: String,
-    masterId: String,
-    startT: String,
-    finishT: String,
-    clientTel: String
-    )(implicit
+      companyId: String,
+      masterId: String,
+      startT: String,
+      finishT: String,
+      clientTel: String
+  )(implicit
       ec: ExecutionContext
-    ): Future[InsertOneResult] = {
+  ): Future[InsertOneResult] = {
     Dao.bookings
       .insertOne(
         BookingRecord(
@@ -48,58 +51,68 @@ object Booking {
           new ObjectId(masterId),
           price = 2000, // todo change
           info = "",
-          startT, finishT,
+          startT,
+          finishT,
           clientTel,
-          status = "Created"))
+          status = "Created"
+        )
+      )
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
 
   def getBookings(
-    companyId: String,
-    clientTel: String,
-    startT: String,
-    finishT: String
+      companyId: String,
+      clientTel: String,
+      startT: String,
+      finishT: String
   )(implicit
-    ec: ExecutionContext
+      ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
     Dao.bookings
-      .find(Filters.and(
-        equal("companyId", new ObjectId(companyId)),
-        equal("clientTel", clientTel),
-        equal("startT", startT),
-        equal("finishT", finishT)))
+      .find(
+        Filters.and(
+          equal("companyId", new ObjectId(companyId)),
+          equal("clientTel", clientTel),
+          equal("startT", startT),
+          equal("finishT", finishT)
+        )
+      )
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
 
   def editBooking(
-    bookingId: String,
-    status: String,
-    message: String
+      bookingId: String,
+      status: String,
+      message: String
   )(implicit
-    ec: ExecutionContext
+      ec: ExecutionContext
   ): Future[BookingRecord] = {
     Dao.bookings
       .findOneAndUpdate(
         Filters.equal("id", new ObjectId(bookingId)),
-        Document("$set" -> Document("status" -> status, "message" -> message)))
+        Document("$set" -> Document("status" -> status, "message" -> message))
+      )
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
 
   def getCompanyBookings(
-    companyId: String,
-    startT: String,
-    finishT: String
+      companyId: String,
+      startT: String,
+      finishT: String
   )(implicit
-    ec: ExecutionContext
+      ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
     Dao.bookings
-      .find(Filters.and(
-        equal("companyId", new ObjectId(companyId)),
-        gte("startT", startT),
-        lte("finishT", finishT)))
+      .find(
+        Filters.and(
+          equal("companyId", new ObjectId(companyId)),
+          gte("startT", startT),
+          lte("finishT", finishT)
+        )
+      )
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
