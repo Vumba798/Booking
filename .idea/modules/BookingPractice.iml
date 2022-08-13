@@ -18,6 +18,7 @@
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-core:2.13.3:jar" level="project" />
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.core:jackson-databind:2.13.3:jar" level="project" />
     <orderEntry type="library" name="sbt: com.fasterxml.jackson.module:jackson-module-scala_2.13:2.13.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.github.nscala-time:nscala-time_2.13:2.30.0:jar" level="project" />
     <orderEntry type="library" name="sbt: com.thoughtworks.paranamer:paranamer:2.8:jar" level="project" />
     <orderEntry type="library" name="sbt: com.typesafe.akka:akka-actor-typed_2.13:2.6.19:jar" level="project" />
     <orderEntry type="library" name="sbt: com.typesafe.akka:akka-actor_2.13:2.6.19:jar" level="project" />
@@ -32,6 +33,8 @@
     <orderEntry type="library" name="sbt: com.typesafe:ssl-config-core_2.13:0.4.3:jar" level="project" />
     <orderEntry type="library" name="sbt: io.projectreactor:reactor-core:3.2.22.RELEASE:jar" level="project" />
     <orderEntry type="library" name="sbt: io.spray:spray-json_2.13:1.3.6:jar" level="project" />
+    <orderEntry type="library" name="sbt: joda-time:joda-time:2.10.12:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.joda:joda-convert:2.2.1:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb.scala:mongo-scala-bson_2.13:4.6.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb.scala:mongo-scala-driver_2.13:4.6.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.mongodb:bson-record-codec:4.6.0:jar" level="project" />
