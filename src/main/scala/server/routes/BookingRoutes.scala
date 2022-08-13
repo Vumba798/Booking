@@ -12,11 +12,14 @@ import server.database.DatabaseActor.{
   EditBookingCommand,
   GetAvailableTimeCommand,
   GetBookingsCommand,
-  GetCompanyBookingsCommands,
+  GetCompanyBookingsCommand,
   JsonResponse,
   StatusCodeResponse
 }
-import server.database.model.requests.CreateBookingRequest
+import server.database.model.requests.{
+  CreateBookingRequest,
+  CreateWorkingScheduleRequest
+}
 
 import scala.concurrent.duration.DurationInt
 
@@ -60,25 +63,6 @@ class BookingRoutes(
   }
 
   val createBooking: Route = path("createBooking") {
-    /* todo where its better to hold params? in query or in body?
-    post {
-      parameters(
-        "companyId".as[String],
-        "masterId".as[String],
-        "startT".as[String],
-        "finishT".as[String],
-        "clientTel".as[String]
-      ) { (companyId, masterId, startT, finishT, clientTel) =>
-        val dbResponse = dbActors.ask(ref =>
-          CreateBookingCommand(ref, companyId, masterId, startT, finishT, clientTel))
-
-        onSuccess(dbResponse) {
-          case StatusCodeResponse(code: Int) => complete(StatusCode.int2StatusCode(code))
-          case _ => complete("undefined response") // TODO
-        }
-      }
-    }
-     */
     post {
       entity(as[CreateBookingRequest]) { request =>
         val dbResponse = dbActors.ask(ref =>
@@ -151,13 +135,22 @@ class BookingRoutes(
         "finishT".as[String]
       ) { (companyId, startT, finishT) =>
         val dbResponse = dbActors.ask(ref =>
-          GetCompanyBookingsCommands(ref, companyId, startT, finishT)
+          GetCompanyBookingsCommand(ref, companyId, startT, finishT)
         )
         onSuccess(dbResponse) {
           case JsonResponse(json) =>
             complete(HttpEntity(ContentTypes.`application/json`, json))
           case _ => complete("undefined response") // TODO
         }
+      }
+    }
+  }
+
+  val createWorkingSchedule: Route = path("createWorkingSchedule") {
+    post {
+      entity(as[CreateWorkingScheduleRequest]) { request =>
+        ???
+      // TODO
       }
     }
   }
