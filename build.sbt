@@ -16,5 +16,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
   "ch.qos.logback" % "logback-classic" % "1.2.11",
   "org.mongodb.scala" %% "mongo-scala-driver" % "4.6.0",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.3"
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.3",
+  "com.github.nscala-time" %% "nscala-time" % "2.30.0"
 )
