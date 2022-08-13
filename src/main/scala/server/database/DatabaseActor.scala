@@ -3,9 +3,8 @@ package server.database
 import Booking.Booking
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import server.database.Dao.{bookings, toJson}
+import server.database.Dao.toJson
+import server.database.model.requests.CreateWorkingScheduleRequest
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -55,6 +54,11 @@ object DatabaseActor {
       companyId: String,
       startT: String,
       finishT: String
+  ) extends BookingCommands
+
+  final case class CreateWorkingScheduleCommand(
+      replyTo: ActorRef[Response],
+      params: CreateWorkingScheduleRequest
   ) extends BookingCommands
 
   sealed trait AuthCommands extends Command
@@ -128,6 +132,15 @@ object DatabaseActor {
             p.replyTo ! JsonResponse(toJson(records))
           }
 
+        Behaviors.same
+
+      case p: CreateWorkingScheduleCommand =>
+        Booking
+          .createWorkingSchedule(p.params)
+          .onComplete {
+            case Success(res) => p.replyTo ! StatusCodeResponse(200)
+            case Failure(e)   => p.replyTo ! FailureResponse(e)
+          }
         Behaviors.same
     }
 
