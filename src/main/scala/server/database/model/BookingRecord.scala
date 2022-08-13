@@ -7,7 +7,7 @@ import org.mongodb.scala.bson.ObjectId
 
 case class BookingRecord(
     @JsonSerialize(using = classOf[ToStringSerializer])
-    id: ObjectId,
+    _id: ObjectId,
     companyId: ObjectId,
     masterId: ObjectId,
     price: Double,
