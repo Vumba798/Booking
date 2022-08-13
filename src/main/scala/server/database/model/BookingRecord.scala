@@ -2,6 +2,7 @@ package server.database.model
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+import com.github.nscala_time.time.Imports.DateTime
 import org.mongodb.scala.bson.ObjectId
 
 case class BookingRecord(
@@ -11,8 +12,8 @@ case class BookingRecord(
     masterId: ObjectId,
     price: Double,
     info: String,
-    startT: String,
-    finishT: String,
+    startT: DateTime,
+    finishT: DateTime,
     clientTel: String,
     status: String
 ) extends DbElement
@@ -36,8 +37,8 @@ object BookingRecord {
       masterId,
       price,
       info,
-      startT,
-      finishT,
+      new DateTime(startT),
+      new DateTime(finishT),
       clientTel,
       status
     )
