@@ -42,4 +42,26 @@ object BookingRecord {
       clientTel,
       status
     )
+
+
+  // creates free timeslot
+  def free(
+      companyId: ObjectId,
+      masterId: ObjectId,
+      price: Double,
+      startT: DateTime,
+      finishT: DateTime
+  ): BookingRecord =
+    BookingRecord(
+      new ObjectId,
+      companyId,
+      masterId,
+      price,
+      "",
+      startT,
+      finishT,
+      "",
+      "free"
+    )
+
 }
