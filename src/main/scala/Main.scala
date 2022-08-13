@@ -5,8 +5,6 @@ import akka.http.scaladsl.Http.ServerBinding
 import server.database.DatabaseActor
 import server.routes.Routes
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.io.StdIn
 import scala.util.{Failure, Success}
 
 object Main {
