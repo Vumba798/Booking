@@ -49,7 +49,7 @@ object DatabaseActor {
       message: String
   ) extends BookingCommands
 
-  final case class GetCompanyBookingsCommands(
+  final case class GetCompanyBookingsCommand(
       replyTo: ActorRef[Response],
       companyId: String,
       startT: String,
@@ -70,7 +70,7 @@ object DatabaseActor {
   sealed trait Response
   case class JsonResponse(json: String) extends Response
   case class StatusCodeResponse(code: Int) extends Response
-  case class InvalidRequest(e: Throwable)
+  case class FailureResponse(e: Throwable)
       extends Response // TODO maybe change it
 
   def apply(): Behavior[Command] = Behaviors.receiveMessage {
@@ -87,7 +87,7 @@ object DatabaseActor {
           .getAvailableTime(p.startT, p.finishT, p.companyId, p.masterId)
           .onComplete {
             case Success(x) => p.replyTo ! JsonResponse(toJson(x))
-            case Failure(e) => p.replyTo ! InvalidRequest(e)
+            case Failure(e) => p.replyTo ! FailureResponse(e)
           }
         Behaviors.same
 
@@ -102,7 +102,7 @@ object DatabaseActor {
           )
           .onComplete {
             case Success(_) => p.replyTo ! StatusCodeResponse(201)
-            case Failure(e) => p.replyTo ! InvalidRequest(e)
+            case Failure(e) => p.replyTo ! FailureResponse(e)
           }
         Behaviors.same
 
@@ -111,7 +111,7 @@ object DatabaseActor {
           .getBookings(p.companyId, p.clientTel, p.startT, p.finishT)
           .onComplete {
             case Success(records) => p.replyTo ! JsonResponse(toJson(records))
-            case Failure(e)       => p.replyTo ! InvalidRequest(e)
+            case Failure(e)       => p.replyTo ! FailureResponse(e)
           }
         Behaviors.same
 
@@ -120,12 +120,12 @@ object DatabaseActor {
           .editBooking(p.bookingId, p.status, p.message)
           .onComplete {
             case Success(x) => p.replyTo ! StatusCodeResponse(200)
-            case Failure(e) => p.replyTo ! InvalidRequest(e)
+            case Failure(e) => p.replyTo ! FailureResponse(e)
           }
 
         Behaviors.same
 
-      case p: GetCompanyBookingsCommands =>
+      case p: GetCompanyBookingsCommand =>
         Booking
           .getCompanyBookings(p.companyId, p.startT, p.finishT)
           .onComplete { case Success(records) =>
