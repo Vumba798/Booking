@@ -14,7 +14,7 @@ case class BookingRecord(
     info: String,
     startT: DateTime,
     finishT: DateTime,
-    clientTel: String,
+    clientPhone: String,
     status: String
 ) extends DbElement
 
