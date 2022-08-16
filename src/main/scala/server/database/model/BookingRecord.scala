@@ -28,7 +28,7 @@ object BookingRecord {
       info: String,
       startT: String,
       finishT: String,
-      clientTel: String,
+      clientPhone: String,
       status: String
   ): BookingRecord =
     BookingRecord(
@@ -39,10 +39,9 @@ object BookingRecord {
       info,
       new DateTime(startT),
       new DateTime(finishT),
-      clientTel,
+      clientPhone,
       status
     )
-
 
   // creates free timeslot
   def free(

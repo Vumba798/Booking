@@ -16,8 +16,8 @@ object Booking {
 
   // TODO check if it is better to move "new ObjectId(...)" in a separate val
   def getAvailableTime(
-      startT: String,
-      finishT: String,
+      startTString: String,
+      finishTString: String,
       companyId: String,
       masterId: String
   )(implicit
@@ -39,9 +39,9 @@ object Booking {
   def createBooking(
       companyId: String,
       masterId: String,
-      startT: String,
-      finishT: String,
-      clientTel: String
+      startTString: String,
+      finishTString: String,
+      clientPhone: String
   )(implicit
       ec: ExecutionContext
   ): Future[InsertOneResult] = {
@@ -63,10 +63,10 @@ object Booking {
   }
 
   def getBookings(
-      companyId: String,
-      clientTel: String,
-      startT: String,
-      finishT: String
+    companyId: String,
+    clientPhone: String,
+    startT: String,
+    finishT: String
   )(implicit
       ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
@@ -74,7 +74,7 @@ object Booking {
       .find(
         Filters.and(
           equal("companyId", new ObjectId(companyId)),
-          equal("clientTel", clientTel),
+          equal("clientPhone", clientPhone),
           equal("startT", startT),
           equal("finishT", finishT)
         )
