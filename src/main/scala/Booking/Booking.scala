@@ -4,14 +4,16 @@ import org.bson.types.ObjectId
 import org.joda.time.DateTime
 import org.mongodb.scala.FindObservable
 import org.mongodb.scala.bson.collection.immutable.Document
+import org.mongodb.scala.bson.conversions
 import org.mongodb.scala.model.Filters.{gt, gte, lt, lte}
 import org.mongodb.scala.result.{InsertManyResult, InsertOneResult}
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.equal
 import server.database.Dao
 import server.database.model._
-import server.database.model.requests.CreateWorkingScheduleRequest
+import server.database.model.requests.{CreateWorkingScheduleRequest, TimeSlot}
 
+import java.util.NoSuchElementException
 import scala.concurrent.{ExecutionContext, Future}
 
 object Booking {
