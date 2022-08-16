@@ -84,21 +84,95 @@ object Booking {
       clientPhone: String
   )(implicit
       ec: ExecutionContext
-  ): Future[InsertOneResult] = {
-    Dao.bookings
-      .insertOne(
-        BookingRecord(
-          new ObjectId(companyId),
-          new ObjectId(masterId),
-          price = 2000, // todo change
-          info = "",
-          startT,
-          finishT,
-          clientTel,
-          status = "Created"
-        )
-      )
-      .toFuture()
+  ): Future[InsertManyResult] = {
+
+    val startT = new DateTime(startTString)
+    val finishT = new DateTime(finishTString)
+
+    def modifyRecords(seq: Seq[BookingRecord]): Seq[BookingRecord] = {
+
+      def modifyBordering(old: BookingRecord): Seq[BookingRecord] = {
+        // modifies slot if we will book only part of it
+        if (old.startT == startT && old.finishT == finishT) {
+          Seq(old.modify(status = "considering", clientPhone = clientPhone))
+        } else if ((old.startT isBefore startT) && (old.finishT == finishT)) {
+          val freeBefore = old.modify(finishT = startT)
+          val booked = old.modify(
+            startT = startT,
+            status = "considering",
+            clientPhone = clientPhone
+          )
+          Seq(freeBefore, booked)
+        } else if ((old.startT == startT) && (old.finishT isAfter finishT)) {
+          val booked = old.modify(
+            finishT = finishT,
+            status = "considering",
+            clientPhone = clientPhone
+          )
+          val after = old.modify(startT = finishT)
+          Seq(booked, after)
+        } else { // if matches
+          val booked =
+            old.modify(status = "considering", clientPhone = clientPhone)
+          Seq(booked)
+        }
+      }
+
+      seq.flatMap {
+        case rec: BookingRecord
+            if (rec.startT isAfter startT) && (rec.finishT isBefore finishT) =>
+          // is inner slot
+          Seq(rec.modify(status = "considering", clientPhone = clientPhone))
+        case rec: BookingRecord => modifyBordering(rec)
+      }
+    }
+
+    def checkTime() = {
+      getMasterBookings(
+        new ObjectId(companyId),
+        new ObjectId(masterId),
+        intersectsFilter(startT, finishT)
+      ).toFuture()
+        .map { records: Seq[BookingRecord] =>
+          // checks if it covers non-free slots
+          records.filter(_.status != "free") match {
+            case Seq() => records
+            case _ =>
+              throw IntersectionException(
+                "This request covers unavailable time"
+              )
+          }
+        }
+        .map { // checks if time is off schedule
+          case Seq() => throw IntersectionException("Time is unavailable")
+          case records
+              if (records.head.startT isAfter startT) ||
+                (records.last.finishT isBefore finishT) =>
+            throw IntersectionException("This request covers unavailable time")
+          case records =>
+            // checks if there are any spaces in "free" timeslots
+            val h = records.head
+            val t = records.tail
+            val endTime = t.foldLeft(h.finishT) { (z, rec) =>
+              if (rec.startT == z) rec.finishT
+              else
+                throw IntersectionException(
+                  "This request covers unavailable time"
+                )
+            }
+            assert(endTime == records.last.finishT)
+            records
+        }
+    }
+
+    checkTime()
+      .flatMap(deleteRecords)
+      .map(modifyRecords)
+      .flatMap(Dao.bookings.insertMany(_).headOption())
+      .map {
+        case Some(x) => x
+        case None    => throw new RuntimeException("Couldn't create booking")
+      }
       .recoverWith(e => Future.failed(e))
   }
 
