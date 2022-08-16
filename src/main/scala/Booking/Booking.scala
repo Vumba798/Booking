@@ -1,6 +1,8 @@
 package Booking
 
 import org.bson.types.ObjectId
+import org.joda.time.DateTime
+import org.mongodb.scala.FindObservable
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.Filters.{gt, gte, lt, lte}
 import org.mongodb.scala.result.{InsertManyResult, InsertOneResult}
@@ -23,15 +25,14 @@ object Booking {
   )(implicit
       ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
-    Dao.bookings
-      .find(
-        Filters.and(
-          equal("startT", startT),
-          equal("finishT", finishT),
-          equal("companyId", new ObjectId(companyId)),
-          equal("masterId", new ObjectId(masterId))
-        )
-      )
+    val startT = new DateTime(startTString)
+    val finishT = new DateTime(finishTString)
+    getMasterBookings(
+      new ObjectId(companyId),
+      new ObjectId(masterId),
+      Filters.and(
+        gte("startT", startT),
+        lte("finishT", finishT)))
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
