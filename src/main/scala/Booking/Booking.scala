@@ -140,23 +140,26 @@ object Booking {
     def hasIntersections = {
       val listOfFutures = params.timeslots
         .map { slot =>
-          Dao.bookings
-            .find(
-              Filters.and(
-                equal("companyId", new ObjectId(params.companyId)),
-                equal("masterId", new ObjectId(slot.masterId)),
-                Filters.or(
-                  Filters.and(
-                    gte("startT", slot.startT),
-                    lt("finishT", slot.startT)
-                  ),
-                  Filters.and(
-                    gt("startT", slot.finishT),
-                    lte("finishT", slot.finishT)
-                  )
-                )
-              )
+          val timeFilter = Filters.or(
+            Filters.and(
+              lt("startT", slot.finishT),
+              gt("startT", slot.startT)
+            ),
+            Filters.and(
+              lt("finishT", slot.finishT),
+              gt("finishT", slot.startT)
+            ),
+            Filters.and(
+              gte("finishT", slot.finishT),
+              lte("startT", slot.startT)
             )
+          )
+
+          getMasterBookings(
+            new ObjectId(params.companyId),
+            new ObjectId(slot.masterId),
+            timeFilter
+          )
             .headOption()
             .recoverWith(e => Future.failed(e))
             .map {
