@@ -17,6 +17,43 @@ import java.util.NoSuchElementException
 import scala.concurrent.{ExecutionContext, Future}
 
 object Booking {
+  // TODO refactor statuses, move them into enum
+
+  private def intersectsFilter(startT: DateTime, finishT: DateTime) =
+    Filters.or(
+      Filters.and(gt("finishT", startT), lte("finishT", finishT)),
+      Filters.and(gte("startT", startT), lt("startT", finishT))
+    )
+
+  private def getMasterBookings(
+      companyId: ObjectId,
+      masterId: ObjectId,
+      timeFilter: conversions.Bson = Filters.empty()
+  ): FindObservable[BookingRecord] = {
+    Dao.bookings.find(
+      Filters.and(
+        equal("companyId", companyId),
+        equal("masterId", masterId),
+        timeFilter
+      )
+    )
+  }
+
+  private def deleteRecords(
+      seq: Seq[BookingRecord]
+  )(implicit ec: ExecutionContext): Future[Seq[BookingRecord]] = {
+    val ids = seq.map(_._id)
+    Dao.bookings
+      .deleteMany(Filters.in("id", ids))
+      .toFutureOption()
+      .map {
+        case Some(res)
+            if res.wasAcknowledged() && res.getDeletedCount == ids.length =>
+          seq
+        case _ =>
+          throw new NoSuchElementException("Failed to delete records by id")
+      }
+  }
 
   // TODO check if it is better to move "new ObjectId(...)" in a separate val
   def getAvailableTime(
