@@ -16,7 +16,31 @@ case class BookingRecord(
     finishT: DateTime,
     clientPhone: String,
     status: String
-) extends DbElement
+) extends DbElement {
+  // TODO check if overridden fields really work
+  // added 'this' for clarity
+  def modify(
+//    _id: ObjectId = _id,
+      companyId: ObjectId = this.companyId,
+      masterId: ObjectId = this.masterId,
+      price: Double = this.price,
+      info: String = this.info,
+      startT: DateTime = this.startT,
+      finishT: DateTime = this.finishT,
+      clientPhone: String = this.clientPhone,
+      status: String = this.status
+  ): BookingRecord =
+    BookingRecord(
+      new ObjectId(),
+      companyId,
+      masterId,
+      price,
+      info,
+      startT,
+      finishT,
+      clientPhone,
+      status)
+}
 
 object BookingRecord {
 
