@@ -1,17 +1,17 @@
-package Booking
+package server.api
 
 import org.bson.types.ObjectId
 import org.joda.time.DateTime
 import org.mongodb.scala.FindObservable
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions
-import org.mongodb.scala.model.Filters.{gt, gte, lt, lte}
-import org.mongodb.scala.result.{InsertManyResult, InsertOneResult}
 import org.mongodb.scala.model.Filters
-import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.result.InsertManyResult
 import server.database.Dao
-import server.database.model._
-import server.database.model.requests.{CreateWorkingScheduleRequest, TimeSlot}
+import server.database.model.BookingRecord
+import server.exceptions.{InsertionException, IntersectionException}
+import server.request_params.booking._
 
 import java.util.NoSuchElementException
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,53 +41,52 @@ object Booking {
 
   private def deleteRecords(
       seq: Seq[BookingRecord]
-  )(implicit ec: ExecutionContext): Future[Seq[BookingRecord]] = {
+  )(implicit
+      ec: ExecutionContext
+  ): Future[Seq[BookingRecord]] = {
     val ids = seq.map(_._id)
     Dao.bookings
       .deleteMany(Filters.in("id", ids))
       .toFutureOption()
       .map {
         case Some(res)
-            if res.wasAcknowledged() && res.getDeletedCount == ids.length =>
+            if res.wasAcknowledged() &&
+              res.getDeletedCount == ids.length =>
           seq
         case _ =>
           throw new NoSuchElementException("Failed to delete records by id")
       }
   }
 
-  // TODO check if it is better to move "new ObjectId(...)" in a separate val
   def getAvailableTime(
-      startTString: String,
-      finishTString: String,
-      companyId: String,
-      masterId: String
+      params: GetAvailableTimeParams
   )(implicit
       ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
-    val startT = new DateTime(startTString)
-    val finishT = new DateTime(finishTString)
+
+    val startT = new DateTime(params.startT)
+    val finishT = new DateTime(params.finishT)
+    val companyId = new ObjectId(params.companyId)
+    val masterId = new ObjectId(params.masterId)
+
     getMasterBookings(
-      new ObjectId(companyId),
-      new ObjectId(masterId),
-      Filters.and(
-        gte("startT", startT),
-        lte("finishT", finishT)))
+      companyId,
+      masterId,
+      Filters.and(gte("startT", startT), lte("finishT", finishT))
+    )
       .toFuture()
       .recoverWith(e => Future.failed(e))
   }
 
   def createBooking(
-      companyId: String,
-      masterId: String,
-      startTString: String,
-      finishTString: String,
-      clientPhone: String
-  )(implicit
-      ec: ExecutionContext
-  ): Future[InsertManyResult] = {
+      params: CreateBookingParams
+  )(implicit ec: ExecutionContext): Future[InsertManyResult] = {
 
-    val startT = new DateTime(startTString)
-    val finishT = new DateTime(finishTString)
+    val startT = new DateTime(params.startT)
+    val finishT = new DateTime(params.finishT)
+    val companyId = new ObjectId(params.companyId)
+    val masterId = new ObjectId(params.companyId)
+    val clientPhone = params.clientPhone
 
     def modifyRecords(seq: Seq[BookingRecord]): Seq[BookingRecord] = {
 
@@ -129,10 +128,11 @@ object Booking {
 
     def checkTime() = {
       getMasterBookings(
-        new ObjectId(companyId),
-        new ObjectId(masterId),
+        companyId,
+        masterId,
         intersectsFilter(startT, finishT)
-      ).toFuture()
+      )
+        .toFuture()
         .map { records: Seq[BookingRecord] =>
           // checks if it covers non-free slots
           records.filter(_.status != "free") match {
@@ -170,24 +170,32 @@ object Booking {
       .map(modifyRecords)
       .flatMap(Dao.bookings.insertMany(_).headOption())
       .map {
-        case Some(x) => x
-        case None    => throw new RuntimeException("Couldn't create booking")
+        case None =>
+          throw new RuntimeException("Couldn't create booking")
+        case Some(res) if !res.wasAcknowledged() =>
+          throw InsertionException("Request wasn't acknowledged")
+        case Some(res) if res.getInsertedIds.isEmpty =>
+          throw InsertionException("No elements was inserted")
+        case Some(res) => res
       }
       .recoverWith(e => Future.failed(e))
   }
 
   def getBookings(
-    companyId: String,
-    clientPhone: String,
-    startT: String,
-    finishT: String
+      params: GetBookingsParams
   )(implicit
       ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
+
+    val companyId = new ObjectId(params.companyId)
+    val startT = new DateTime(params.startT)
+    val finishT = new DateTime(params.finishT)
+    val clientPhone = params.clientPhone
+
     Dao.bookings
       .find(
         Filters.and(
-          equal("companyId", new ObjectId(companyId)),
+          equal("companyId", companyId),
           equal("clientPhone", clientPhone),
           equal("startT", startT),
           equal("finishT", finishT)
@@ -198,15 +206,18 @@ object Booking {
   }
 
   def editBooking(
-      bookingId: String,
-      status: String,
-      message: String
+      params: EditBookingParams
   )(implicit
       ec: ExecutionContext
   ): Future[BookingRecord] = {
+
+    val bookingId = new ObjectId(params.bookingId)
+    val status = params.status
+    val message = params.message
+
     Dao.bookings
       .findOneAndUpdate(
-        Filters.equal("id", new ObjectId(bookingId)),
+        Filters.equal("id", bookingId),
         Document("$set" -> Document("status" -> status, "message" -> message))
       )
       .toFuture()
@@ -214,16 +225,18 @@ object Booking {
   }
 
   def getCompanyBookings(
-      companyId: String,
-      startT: String,
-      finishT: String
+      params: GetCompanyBookingsParams
   )(implicit
       ec: ExecutionContext
   ): Future[Seq[BookingRecord]] = {
+
+    val companyId = new ObjectId(params.companyId)
+    val startT = new DateTime(params.startT)
+    val finishT = new DateTime(params.finishT)
     Dao.bookings
       .find(
         Filters.and(
-          equal("companyId", new ObjectId(companyId)),
+          equal("companyId", companyId),
           gte("startT", startT),
           lte("finishT", finishT)
         )
@@ -233,7 +246,7 @@ object Booking {
   }
 
   def createWorkingSchedule(
-      params: CreateWorkingScheduleRequest
+      params: CreateWorkingScheduleParams
   )(implicit
       ec: ExecutionContext
   ): Future[InsertManyResult] = {
