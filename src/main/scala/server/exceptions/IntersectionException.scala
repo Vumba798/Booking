@@ -1,4 +1,4 @@
-package Booking
+package server.exceptions
 
 final case class IntersectionException(
     private val message: String = "",

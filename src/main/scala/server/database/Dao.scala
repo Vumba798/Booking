@@ -8,7 +8,7 @@ import org.bson.codecs.configuration.CodecRegistries.{fromCodecs, fromProviders,
 import org.joda.time.DateTime
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson.codecs.Macros._
-import org.mongodb.scala.{Document, MongoClient, MongoCollection, MongoDatabase}
+import org.mongodb.scala.{MongoClient, MongoCollection, MongoDatabase}
 import server.database.model._
 
 

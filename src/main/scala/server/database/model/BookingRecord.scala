@@ -18,9 +18,8 @@ case class BookingRecord(
     status: String
 ) extends DbElement {
   // TODO check if overridden fields really work
-  // added 'this' for clarity
+  // added 'this' keyword for clarity
   def modify(
-//    _id: ObjectId = _id,
       companyId: ObjectId = this.companyId,
       masterId: ObjectId = this.masterId,
       price: Double = this.price,
