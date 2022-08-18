@@ -1,4 +1,4 @@
-package server.database.model.requests
+package server.request_params.booking
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.joda.time.DateTime
@@ -16,12 +16,12 @@ object TimeSlotWithStr {
     TimeSlot(masterId, new DateTime(startT).toDateTimeISO, new DateTime(finishT).toDateTimeISO, price)
 }
 
-case class CreateWorkingScheduleRequest(
+case class CreateWorkingScheduleParams(
     companyId: String,
     timeslots: List[TimeSlot]
 )
 
-case object CreateWorkingScheduleRequest
+case object CreateWorkingScheduleParams
     extends SprayJsonSupport
     with DefaultJsonProtocol
     with NullOptions {
@@ -29,7 +29,7 @@ case object CreateWorkingScheduleRequest
     TimeSlotWithStr.apply
   )
   implicit val createWorkingScheduleRequestFormat
-      : RootJsonFormat[CreateWorkingScheduleRequest] = jsonFormat2(
-    CreateWorkingScheduleRequest.apply
+      : RootJsonFormat[CreateWorkingScheduleParams] = jsonFormat2(
+    CreateWorkingScheduleParams.apply
   )
 }
