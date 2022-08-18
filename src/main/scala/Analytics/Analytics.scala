@@ -1,5 +1,0 @@
-package Analytics
-
-class Analytics {
-
-}

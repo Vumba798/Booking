@@ -1,5 +1,0 @@
-package Auth
-
-class Auth {
-
-}
