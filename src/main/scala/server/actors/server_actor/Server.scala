@@ -1,5 +1,6 @@
 package server.actors.server_actor
 
+import akka.actor.TypedActor.context
 import akka.actor.typed.scaladsl.{Behaviors, Routers}
 import akka.actor.typed.{Behavior, PostStop}
 import akka.http.scaladsl.Http
@@ -7,6 +8,7 @@ import akka.http.scaladsl.Http.ServerBinding
 import server.actors.database_actor.DatabaseActor
 import server.routes.Routes
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 object Server {
@@ -18,7 +20,7 @@ object Server {
 
   def apply(): Behavior[Message] = Behaviors.setup { ctx =>
     implicit val system = ctx.system
-    // TODO replace hardcoded values
+
     val host = "localhost"
     val port = 8080
 
@@ -48,10 +50,8 @@ object Server {
           Behaviors.stopped
         }
         .receiveSignal {
-          case (
-                _,
-                PostStop
-              ) => // we receive PostStop when the actor was stopped
+          // we receive PostStop when the actor was stopped
+          case (_, PostStop) =>
             binding.unbind()
             Behaviors.same
         }
