@@ -5,7 +5,6 @@ import akka.http.scaladsl.server.Directives.{complete, concat, pathPrefix}
 import akka.http.scaladsl.server.{ExceptionHandler, Route}
 import server.actors.database_actor.DatabaseActor
 import server.exceptions.{InsertionException, IntersectionException}
-import server.routes.DbRoutesTrait
 
 final class Routes(
     override protected val dbActors: ActorRef[DatabaseActor.Command]
@@ -13,20 +12,17 @@ final class Routes(
     override protected implicit val system: ActorSystem[Nothing]
 ) extends DbRoutesTrait {
 
-  /* TODO implement ExceptionHandler
   implicit def exceptionHandler =
     ExceptionHandler {
       case e: InsertionException =>
-        complete(???)
+        complete(s"An insertion exception has occurred while querying database:\n${e.getMessage}")
       case e: IntersectionException =>
-        complete(???)
+        complete(s"An intersection exception has occurred while querying database:\n${e.getMessage}")
       case e: RuntimeException =>
-        complete(???)
-      case _ =>
-        complete(???)
+        complete(s"A runtime exception has occurred while proceeding your request:\n${e.getMessage}")
+      case e: Throwable =>
+        complete(s"An unknown exception has occurred:\n${e.getMessage}")
     }
-
-   */
 
   private val bookingRoutes = new BookingRoutes(dbActors).routes
   /*
